@@ -7,12 +7,16 @@ import { rateLimit } from '@/lib/rate-limit/ratelimiter';
 const RequestSchema = z.object({
   sources: z
     .array(z.object({ filename: z.string(), content: z.string() }))
-    .min(1, 'At least one source file is required')
-    .max(24),
-  goal: z.string().min(8),
+    .max(24)
+    .optional()
+    .default([]),
+  goal: z.string().min(1, 'Please describe your goal'),
   style: z.enum(['reference', 'tutorial', 'changelog']).default('reference'),
   language: z.string().default('en'),
 });
+
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,8 +57,12 @@ export async function POST(req: NextRequest) {
             if (delta) controller.enqueue(encoder.encode(delta));
           }
           controller.close();
-        } catch (err: any) {
-          controller.error(err);
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            controller.error(err);
+          } else {
+            controller.error(new Error('Unknown stream error'));
+          }
         }
       },
     });
@@ -65,8 +73,11 @@ export async function POST(req: NextRequest) {
         'Cache-Control': 'no-store',
       },
     });
-  } catch (err: any) {
-    const message = err?.message || 'Internal Server Error';
+  } catch (err: unknown) {
+    let message = 'Internal Server Error';
+    if (err instanceof Error) {
+      message = err.message;
+    }
     const status = message.includes('rate') ? 429 : 500;
     return new Response(message, { status });
   }

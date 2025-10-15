@@ -44,14 +44,38 @@ export default function Page() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
+      let buffer = '';
+      let flushing = false;
+
+      const flush = () => {
+        if (!buffer) return;
+        setOutput(prev => prev + buffer);
+        buffer = '';
+        flushing = false;
+      };
+
+      const scheduleFlush = () => {
+        if (flushing) return;
+        flushing = true;
+        setTimeout(flush, 50); // throttle UI updates ~20fps
+      };
+
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         done = readerDone;
-        if (value) setOutput(prev => prev + decoder.decode(value));
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+          scheduleFlush();
+        }
       }
-    } catch (err: any) {
-      if (err?.name === 'AbortError') return;
-      setError(err?.message || 'Unknown error');
+      flush();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') return;
+        setError(err.message);
+      } else {
+        setError('Unknown error');
+      }
     } finally {
       setIsGenerating(false);
     }

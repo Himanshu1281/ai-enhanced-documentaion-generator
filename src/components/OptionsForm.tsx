@@ -57,12 +57,16 @@ export function OptionsForm(props: {
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Language</label>
-          <input
-            className="w-full rounded-md border p-2 text-sm"
+          <select
+            className="w-full rounded-md border p-2 text-sm bg-black text-white"
             value={language}
             onChange={e => setLanguage(e.currentTarget.value)}
-            placeholder="e.g., en, es, fr"
-          />
+          >
+            <option value="en">English</option>
+            <option value="zh">Mandarin Chinese</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+          </select>
         </div>
       </div>
       <div>

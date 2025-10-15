@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+  edge_functions = "netlify/edge-functions"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Optional: environment variables expected at build/runtime
+[template.environment]
+  OPENAI_API_KEY = "OpenAI API key for generation"
+  AI_PROVIDER = "AI provider (default: openai)"
+  AI_MODEL = "AI model (default: gpt-4o-mini)"
+
+
