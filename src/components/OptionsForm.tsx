@@ -21,6 +21,7 @@ export function OptionsForm(props: {
   const [style, setStyle] = useState<Style>('reference');
   const [language, setLanguage] = useState('en');
   const [pasted, setPasted] = useState('');
+  const hasFiles = sources.length > 0;
 
   const handleGenerate = useCallback(() => {
     const combined = [
@@ -83,7 +84,7 @@ export function OptionsForm(props: {
         <button
           className="rounded-md bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
           onClick={handleGenerate}
-          disabled={isGenerating || !goal}
+          disabled={isGenerating || !goal || !hasFiles}
         >
           {isGenerating ? 'Generating…' : 'Generate'}
         </button>
@@ -94,6 +95,9 @@ export function OptionsForm(props: {
           >
             Stop
           </button>
+        ) : null}
+        {!hasFiles ? (
+          <span className="text-xs text-gray-500">Upload at least one file to enable Generate.</span>
         ) : null}
       </div>
     </div>
